@@ -17,6 +17,7 @@ const REPLACE_TABLE = `
 \\domtableaucolor	black
 \\domtableauwidth	1.25pt
 \\domtableaufill	lightgray
+\\nombre	\\numprint
 \\txtbox	\\ovalnum`.trim().split('\n').map(line => line.split('\t'));
 
 export function migrateTex(tex: string) {
