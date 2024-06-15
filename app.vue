@@ -2,7 +2,8 @@
 const tex = ref('');
 const message = ref<null | { content: string, type: 'success' | 'error' }>(null);
 
-function onMigrate() {
+function migrate() {
+  // 1. Migrate the TeX
   try {
     const migrated = safeMigrateTex(tex.value);
     if (migrated === tex.value) {
@@ -13,8 +14,32 @@ function onMigrate() {
     message.value = { content: 'Migrated successfully', type: 'success' };
   } catch (error: any) {
     message.value = { content: error?.message ?? 'Unknown error', type: 'error' };
+    return;
+  }
+
+  // 2. Copy the migrated TeX to the clipboard
+  try {
+    navigator.clipboard.writeText(tex.value);
+  } catch (error: any) {
+    message.value = { content: error?.message ?? 'Unknown error when copying to clipboard', type: 'error' };
+    return;
+  }
+
+  // 3. Notify the parent window
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'migrated', tex: tex.value }, '*');
   }
 }
+
+// On mount, get the hash from the URL and set it to the textarea
+onMounted(() => {
+  const hash = window.location.hash.slice(1);
+  if (hash) {
+    tex.value = decodeURIComponent(hash);
+    migrate();
+  }
+});
+
 </script>
 
 <template>
@@ -22,7 +47,7 @@ function onMigrate() {
     <textarea v-model="tex"></textarea>
     <p v-if="message" :class="'message message-' + message.type">{{ message.content }}</p>
     <div class="actions">
-      <button @click="onMigrate">Migrate TeX</button>
+      <button @click="migrate">Migrate TeX</button>
     </div>
   </div>
 </template>
