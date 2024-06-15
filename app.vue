@@ -6,12 +6,12 @@ function migrate() {
   // 1. Migrate the TeX
   try {
     const migrated = safeMigrateTex(tex.value);
-    if (migrated === tex.value) {
+    if (migrated !== tex.value) {
+      tex.value = migrated;
+      message.value = { content: 'Migrated successfully', type: 'success' };
+    } else {
       message.value = { content: 'No need to migrate', type: 'success' };
-      return;
     }
-    tex.value = migrated;
-    message.value = { content: 'Migrated successfully', type: 'success' };
   } catch (error: any) {
     message.value = { content: error?.message ?? 'Unknown error', type: 'error' };
     return;
